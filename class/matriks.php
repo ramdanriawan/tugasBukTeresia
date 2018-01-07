@@ -238,33 +238,284 @@ class matriks extends matriksError
       return $matriksHasil;
    }
 
+   //fungsi untuk merubah tiap baris matriks
+   function matriksUbahBaris(array $baris1, array $baris2, int $columnKe) : array
+   {
+      $matriksHasil = [];
+      $elementAtas = $baris2[$columnKe];
+      $elementBawah = $baris1[$columnKe];
+
+      foreach ($baris1 as $key => $value) {
+         $matriksHasil[] = $baris2[$key] - ($baris1[$key] * $elementAtas / $elementBawah);
+      }
+
+      return $matriksHasil;
+   }
+
+   //fungsi untuk merubah tiap baris matriks (khusus untuk spl)
+   function matriksUbahBarisSpl(array $baris1, array $baris2, int $columnKe) : array
+   {
+      $matriksHasil = [];
+
+      foreach ($baris1 as $key => $value) {
+         $matriksHasil[] = ($baris2[$key] * $baris1[$columnKe]) - ($baris1[$key] * $baris2[$columnKe]);
+      }
+
+      return $matriksHasil;
+   }
+
+   function matriksDeterminan(array $matriks1)
+   {
+      $matriksHasil = 0;
+      $matriksKeys = array_keys($matriks1);
+      $this->matriksIsiData($matriks1);
+      parent::matriksErrorCekBarisDanColumn($matriks1);
+      parent::matriksErrorElementBukanNumeric($matriks1);
+
+      $matriks1 = $this->matriksSegitigaBawahDeterminan($matriks1);
+
+      //simpan dulu angka pada column pertama
+      $matriksHasil = $matriks1[$matriksKeys[0]][0];
+
+      //for untuk menhitung perkalian antara diagonal
+      for ($i=0; $i < count($matriks1) - 1; $i++) {
+         $matriksHasil *= $matriks1[$matriksKeys[$i+1]][$i+1];
+      }
+
+      return $matriksHasil;
+   }
+
+   function matriksDeterminanAll(array $matriks1) : array
+   {
+      $matriksHasil = [];
+      foreach ($matriks1 as $key => $value) {
+         $matriksHasil[] = $this->matriksDeterminan($value);
+      }
+
+      return $matriksHasil;
+   }
+
+
+   //methode untuk membuat segitiga bawah (khusus untuk mencari determinan)
+   function matriksSegitigaBawahDeterminan(array $matriks1) : array
+   {
+      $matriksKeys = array_keys($matriks1);
+      //untuk membuat matriks segitiga bawah
+      for ($i=0; $i < count($matriks1) - 1; $i++) {
+         //pindah baris
+         for ($j=$i+1; $j < count($matriks1); $j++) {
+
+            //ubah setiap column pada setiap baris dari depan
+            $matriks1[$matriksKeys[$j]] = $this->matriksUbahBaris($matriks1[$matriksKeys[$i]], $matriks1[$matriksKeys[$j]], $i);
+         }
+      }
+
+      return $matriks1;
+   }
+
+   //methode untuk membuat segitiga atas (khusus untuk mencari determinan)
+   function matriksSegitigaAtasDeterminan(array $matriks1) : array
+   {
+      //$this->matriksIsiData($matriks1);
+      $matriksKeys = array_keys($matriks1);
+      //untuk membuat matriks segitiga atas
+      for ($i=count($matriks1) - 1; $i > 0; $i--) {
+         //pindah baris
+         for ($j=$i-1; $j >= 0; $j--) {
+
+            //ubah setiap column pada setiap baris dari belakang
+            $matriks1[$matriksKeys[$j]] = $this->matriksUbahBaris($matriks1[$matriksKeys[$i]], $matriks1[$matriksKeys[$j]], $i);
+         }
+      }
+
+      return $matriks1;
+   }
+
+   //methode untuk membuat segitiga bawah khusus spl
+   function matriksSegitigaBawahSpl(array $matriks1) : array
+   {
+      $matriksKeys = array_keys($matriks1);
+      //untuk membuat matriks segitiga bawah
+      for ($i=0; $i < count($matriks1) - 1; $i++) {
+         //pindah baris
+         for ($j=$i+1; $j < count($matriks1); $j++) {
+
+            //ubah setiap column pada setiap baris dari depan
+            $matriks1[$matriksKeys[$j]] = $this->matriksUbahBarisSpl($matriks1[$matriksKeys[$i]], $matriks1[$matriksKeys[$j]], $i);
+         }
+      }
+
+      return $matriks1;
+   }
+
+   //methode untuk membuat segitiga atas khusus spl
+   function matriksSegitigaAtasSpl(array $matriks1) : array
+   {
+      //$this->matriksIsiData($matriks1);
+      $matriksKeys = array_keys($matriks1);
+      //untuk membuat matriks segitiga atas
+      for ($i=count($matriks1) - 1; $i > 0; $i--) {
+         //pindah baris
+         for ($j=$i-1; $j >= 0; $j--) {
+
+            //ubah setiap column pada setiap baris dari belakang
+            $matriks1[$matriksKeys[$j]] = $this->matriksUbahBarisSpl($matriks1[$matriksKeys[$i]], $matriks1[$matriksKeys[$j]], $i);
+         }
+      }
+
+      return $matriks1;
+   }
+
+   //methode untuk membuat segitiga atas khusus inverse
+   function matriksSegitigaAtasInverse(array $matriks1) : array
+   {
+      //$this->matriksIsiData($matriks1);
+      $matriksKeys = array_keys($matriks1);
+      $columnKe =  (count($matriks1[$matriksKeys[0]]) - 1) / 2;
+      $columnKe = (int) $columnKe;
+
+      //untuk membuat matriks segitiga atas
+      for ($i=count($matriks1) - 1; $i > 0; $i--) {
+         //pindah baris
+         for ($j=$i-1; $j >= 0; $j--) {
+
+            //ubah setiap column pada setiap baris dari belakang
+            $matriks1[$matriksKeys[$j]] = $this->matriksUbahBaris($matriks1[$matriksKeys[$i]], $matriks1[$matriksKeys[$j]],  $columnKe);
+         }
+
+         $columnKe--;
+      }
+
+      return $matriks1;
+   }
+
+   //method untuk menjadikan matriks yang sudah kena operasi obe menjadi identitas
+   function matriksIdentitas(array &$matriks1)
+   {
+
+      //variabel untuk menimpan perubahan nilai column yang di ambil tiap baris
+      $columnKe = 0;
+      foreach ($matriks1 as $key => $value) {
+
+         //lakukan pembagian tiap element pada tiap baris
+         foreach ($value as $key2 => $value2) {
+            $matriks1[$key][$key2] /= $value[$columnKe];
+         }
+
+         $columnKe++;
+      }
+
+   }
+
+   //method untuk mencari spl (sistem persamaan linear) dengan methode obe
+   function matriksSpl(array $matriks1) : array
+   {
+      $this->matriksIsiData($matriks1);
+      parent::matriksErrorElementBukanNumeric($matriks1);
+      $matriksKeys = array_keys($matriks1);
+
+      //ubah menjadi matriks segitiga bawah
+      $matriks1 = $this->matriksSegitigaAtasSpl($matriks1);
+      $matriks1 = $this->matriksSegitigaBawahSpl($matriks1);
+
+      //jadikan sebagai matriks identitas
+      $this->matriksIdentitas($matriks1);
+
+      return $matriks1;
+   }
+
+   function matriksSplAll(array $matriks) : array
+   {
+      $matriksHasil = [];
+
+      foreach ($matriks as $key => $value) {
+         $matriksHasil[] = $this->matriksSpl($value);
+      }
+
+      return $matriksHasil;
+   }
+
+   //methode untuk menambah matriks identitas (khusus untuk matriks inverse)
+   function matriksTambahIdentitas(array &$matriks1)
+   {
+      $i = 0;
+      foreach ($matriks1 as $key => $value) {
+         for ($j=0; $j < count($value); $j++) {
+            if($i == $j)
+            {
+               array_push($matriks1[$key], 1);
+            }else
+            {
+               array_push($matriks1[$key], 0);
+            }
+         }
+
+         $i++;
+      }
+   }
+
+   //methode untuk inverse matriks
+   function matriksInverse(array $matriks1) : array
+   {
+      //conversi matriks dan cek apakah matriks merupakan matriks persegi atau tidak
+      $this->matriksIsiData($matriks1);
+      parent::matriksErrorCekBarisDanColumn($matriks1);
+      parent::matriksErrorElementBukanNumeric($matriks1);
+
+      $matriksHasil = [];
+
+      $this->matriksTambahIdentitas($matriks1);
+      $matriks1 = $this->matriksSegitigaAtasInverse($matriks1);
+      $matriks1 = $this->matriksSegitigaBawahDeterminan($matriks1);
+      $this->matriksIdentitas($matriks1);
+
+      //perulangan untuk membuang matriks identitas yang sudah di sebelah kiri untuk mendapatkan matriks inverse
+      foreach ($matriks1 as $key => $value) {
+         for ($i=0; $i < count($matriks1); $i++) {
+
+            //inilah fungsi untuk buangnya
+            array_shift($matriks1[$key]);
+         }
+      }
+
+      return $matriks1;
+   }
+
+   //methode untuk invers matriks sekaligus banyak
+   function matriksInverseAll(array $matriks1) : array
+   {
+      $matriksHasil = [];
+      foreach ($matriks1 as $key => $value) {
+         $matriksHasil[] = $this->matriksInverse($value);
+      }
+
+      return $matriksHasil;
+   }
+
 }
 
 $matriks = new matriks();
 
-
-
-
 $matriks1 = array(
-   "b1" => "1;2;3;4", //1,2,3,7
-   "b2" => "2;3;4;5", //2,3,4,8
-   "b3" => "3;4;5;6", //3,4,5,9
-   "b4" => "4;5;6;7" //4,5,6,10
+   "b1" => "-2;4;-5;9", //1,2,3,7
+   "b2" => "1;3;-7;8", //2,3,4,8
+   "b3" => "0;4;-8;7", //2,3,4,8
+   "b4" => "6;4;-8;3" //2,3,4,8
 );
 
 $matriks2 = array(
-   "b1" => "1;2;3;4", //1,2,3,7
-   "b2" => "2;3;4;5", //2,3,4,8
-   "b3" => "3;4;5;6", //3,4,5,9
-   "b4" => "3;4;5;6", //3,4,5,9
+   "b1" => "1;2;11", //1,2,3,7
+   "b2" => "3;4;25", //2,3,4,8
+   "b3" => "3;4;6" //2,3,4,8
+
 );
 
 
 $matriks3 = array(
-   "b1" => "1;2;3;4", //1,2,3,7
-   "b2" => "2;3;4;5", //2,3,4,8
-   "b3" => "3;4;5;6", //3,4,5,9
-   "b4" => "4;5;6;7" //4,5,6,10
+   "b1" => "1;2;3;4;7", //1,2,3,7
+   "b2" => "2;3;4;5;8", //2,3,4,8
+   "b3" => "3;4;5;6;9", //3,4,5,9
+   "b4" => "4;5;6;7;10" //4,5,6,10
 );
 
 $matriks4 = array(
@@ -275,13 +526,22 @@ $matriks4 = array(
 );
 
 $matriks5 = array(
-   "b1" => "1;2;3;4", //1,2,3,7
-   "b2" => "2;3;4;5", //2,3,4,8
-   "b3" => "3;4;5;6", //3,4,5,9
-   "b4" => "7;8;9;10" //4,5,6,10
+   "b1" => "2;0;-3;0", //1,2,3,7
+   "b2" => "0;5;2;3", //2,3,4,8
+   "b3" => "-2;3;-1;4", //3,4,5,9
+   "b4" => "3;6;0;5" //4,5,6,10
 );
 
-echo "<pre>";
-print_r($matriks->matriksOperasiKaliAll(array($matriks1, $matriks2, $matriks3, $matriks4, $matriks5)));
+// print_r($matriks->matriksOperasiKaliAll(array($matriks1, $matriks2, $matriks3, $matriks4, $matriks5)));
+// print_r($matriks->matriksDeterminanAll(array($matriks1, $matriks2)));
+
+// print_r($matriks->matriksDeterminan($matriks5));
+// print_r($matriks->matriksDeterminan($matriks1));
+foreach ($matriks->matriksInverseAll(array($matriks1)) as $key => $value) {
+   foreach ($value as $key2 => $value2) {
+      print_r($value2);
+      echo "<br>";
+   }
+}
 
 ?>

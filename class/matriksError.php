@@ -44,20 +44,20 @@ class matriksError
       }
    }
 
-   // function matriksErrorCekBarisDanColumn(array $matriks1)
-   // {
-   //    $jumlahBaris = count($matriks1);
-   //
-   //    foreach ($matriks1 as $key => $value) {
-   //       $jumlahColumn = count($matriks1[$key]);
-   //
-   //       if($jumlahBaris != $jumlahColumn)
-   //       {
-   //          echo "Jumlah baris dan column di suatu matriks tidak sama!";
-   //          die();
-   //       }
-   //    }
-   // }
+   function matriksErrorCekBarisDanColumn(array $matriks1)
+   {
+      $jumlahBaris = count($matriks1);
+
+      foreach ($matriks1 as $key => $value) {
+         $jumlahColumn = count($matriks1[$key]);
+
+         if($jumlahBaris != $jumlahColumn)
+         {
+            echo "Jumlah baris dan column di suatu matriks tidak sama!";
+            die();
+         }
+      }
+   }
 
    function matriksErrorCekBarisDanColumnDuaMatriks($matriks1, $matriks2)
    {
